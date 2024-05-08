@@ -1,5 +1,5 @@
 package main
-
+/*
 //
 // see comments in lockd.go
 //
@@ -29,3 +29,4 @@ func main() {
 		usage()
 	}
 }
+*/

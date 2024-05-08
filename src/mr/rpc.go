@@ -6,8 +6,11 @@ package mr
 // remember to capitalize all names.
 //
 
-import "os"
-import "strconv"
+import (
+	// "fmt"
+	"os"
+	"strconv"
+)
 
 //
 // example to show how to declare the arguments
@@ -23,7 +26,17 @@ type ExampleReply struct {
 }
 
 // Add your RPC definitions here.
+// worker的请求
+type WorkerArgs struct {
+	Task      *Task    //worker完成的任务
+	Filenames []string //如果完成的为map任务则要返回给中间文件给master
+}
 
+type WorkerReply struct {
+	Task    *Task //从master请求到的新任务
+	Done    bool  //任务是否已经全部完成
+	NReduce int   //ihash用
+}
 
 // Cook up a unique-ish UNIX-domain socket name
 // in /var/tmp, for the master.

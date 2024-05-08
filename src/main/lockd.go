@@ -1,5 +1,5 @@
 package main
-
+/*
 // export GOPATH=~/6.824
 // go build lockd.go
 // go build lockc.go
@@ -29,3 +29,4 @@ func main() {
 		time.Sleep(100 * time.Second)
 	}
 }
+*/

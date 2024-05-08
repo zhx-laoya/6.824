@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    // "configurations": [
+    //     {
+    //         "debugAdapter": "dlv-dap",
+    //         "name": "mrsequential",
+    //         "type": "go",
+    //         "request": "launch",
+    //         "mode": "auto",
+    //         "program": "${workspaceFolder}/src/main/mrsequential.go",
+    //         "args": [
+    //             "wc.so",
+    //             "pg-grimm.txt",
+    //             "pg-frankenstein.txt"
+    //         ],
+    //         "buildFlags": "-race"
+    //     }
+    // ]
+}

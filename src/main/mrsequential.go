@@ -1,5 +1,5 @@
 package main
-
+//一个mapreduce示例
 //
 // simple sequential MapReduce.
 //
@@ -7,7 +7,7 @@ package main
 //
 
 import "fmt"
-import "../mr"
+import "6.824/src/mr"
 import "plugin"
 import "os"
 import "log"
@@ -22,7 +22,10 @@ func (a ByKey) Len() int           { return len(a) }
 func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
+//使用 -buildmode=plugin 选项可以将 wc.go 编译为一个插件（plugin），生成的文件可以被其他 Go 程序动态加载和使用。
 func main() {
+	//0为程序本身的名称，后面的为go传入的参数
+	// fmt.Print(len(os.Args))
 	if len(os.Args) < 3 {
 		fmt.Fprintf(os.Stderr, "Usage: mrsequential xxx.so inputfiles...\n")
 		os.Exit(1)
@@ -35,17 +38,23 @@ func main() {
 	// pass it to Map,
 	// accumulate the intermediate Map output.
 	//
+	//中间输出
 	intermediate := []mr.KeyValue{}
+	//枚举每个pg文件
 	for _, filename := range os.Args[2:] {
+		//打开文件
 		file, err := os.Open(filename)
 		if err != nil {
 			log.Fatalf("cannot open %v", filename)
 		}
+		//读取文件内容
 		content, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Fatalf("cannot read %v", filename)
 		}
 		file.Close()
+		//关闭文件
+		//获取中间keyvalue
 		kva := mapf(filename, string(content))
 		intermediate = append(intermediate, kva...)
 	}
@@ -55,7 +64,9 @@ func main() {
 	// intermediate data is in one place, intermediate[],
 	// rather than being partitioned into NxM buckets.
 	//
-
+	// 与真正的MapReduce相比，一个重要的区别是所有的中间数据都集中存储在一个地方，
+	// 即`intermediate[]`，而不是被划分为NxM个桶（buckets）。
+	
 	sort.Sort(ByKey(intermediate))
 
 	oname := "mr-out-0"

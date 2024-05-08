@@ -1,5 +1,5 @@
 package main
-
+/*
 //
 // start a diskvd server. it's a member of some replica
 // group, which has other members, and it needs to know
@@ -63,7 +63,6 @@ func main() {
 	}
 
 	runtime.GOMAXPROCS(4)
-
 	srv := diskv.StartServer(gid, masters, replicas, me, dir, restart)
 	srv.Setunreliable(unreliable)
 
@@ -72,3 +71,4 @@ func main() {
 	mep, _ := os.FindProcess(os.Getpid())
 	mep.Kill()
 }
+*/

@@ -1,10 +1,10 @@
 package raft
 
 //
-// support for Raft and kvraft to save persistent
-// Raft state (log &c) and k/v server snapshots.
+// support for Raft and kvraft to save persistent 
+// Raft state (log &c) and k/v server snapshots. 用于保存 Raft 状态（日志等）和 k/v 服务器的快照
 //
-// we will use the original persister.go to test your code for grading.
+// we will use the original persister.go to test your code for grading. 
 // so, while you can modify this code to help you debug, please
 // test with the original before submitting.
 //
@@ -29,19 +29,20 @@ func (ps *Persister) Copy() *Persister {
 	np.snapshot = ps.snapshot
 	return np
 }
-
+//更新raft的状态
 func (ps *Persister) SaveRaftState(state []byte) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	ps.raftstate = state
 }
-
+//读取raft的状态
 func (ps *Persister) ReadRaftState() []byte {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	return ps.raftstate
 }
 
+//获取raft状态长度
 func (ps *Persister) RaftStateSize() int {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()

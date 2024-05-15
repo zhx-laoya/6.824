@@ -36,7 +36,6 @@ func TestInitialElection2A(t *testing.T) {
 	if term1 < 1 {
 		t.Fatalf("term is %v, but should be at least 1", term1)
 	}
-
 	// does the leader+term stay the same if there is no network failure?
 	time.Sleep(2 * RaftElectionTimeout)
 	term2 := cfg.checkTerms()
@@ -49,40 +48,110 @@ func TestInitialElection2A(t *testing.T) {
 
 	cfg.end()
 }
+func TestTmp(t *testing.T){
+	servers := 3
+	cfg := make_config(t, servers, false)
+	defer cfg.cleanup()
 
+	cfg.begin("Test (2A): election after network failure")
+	//得到一个leader
+	leader1 := cfg.checkOneLeader()
+
+	DPrintf("初始化所有节点,leader的id为：%v\n", leader1)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
+
+	// if the leader disconnects, a new one should be elected.
+	//让这个leader断开
+	cfg.disconnect(leader1)
+	cfg.checkOneLeader()
+	DPrintf("断开一个leader,断开leader的id为：%v\n", leader1)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
+}
 func TestReElection2A(t *testing.T) {
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
 
 	cfg.begin("Test (2A): election after network failure")
-
+	//得到一个leader
 	leader1 := cfg.checkOneLeader()
 
+	DPrintf("初始化所有节点,leader的id为：%v\n", leader1)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
 	// if the leader disconnects, a new one should be elected.
+	//让这个leader断开
 	cfg.disconnect(leader1)
 	cfg.checkOneLeader()
+	DPrintf("断开一个leader,断开leader的id为：%v\n", leader1)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
 
 	// if the old leader rejoins, that shouldn't
 	// disturb the new leader.
 	cfg.connect(leader1)
 	leader2 := cfg.checkOneLeader()
-
+	DPrintf("前一个leader重新连接后,当前leader的id为：%v\n", leader2)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
 	// if there's no quorum, no leader should
 	// be elected.
+	//断掉两个服务器 包括leader
 	cfg.disconnect(leader2)
 	cfg.disconnect((leader2 + 1) % servers)
 	time.Sleep(2 * RaftElectionTimeout)
 	cfg.checkNoLeader()
+	//断掉两个服务器其中一个为leader，则断开后必没有leader
+	DPrintf("断掉两个服务器后：%v,%v\n", leader2, (leader2+1)%servers)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
 
 	// if a quorum arises, it should elect a leader.
 	cfg.connect((leader2 + 1) % servers)
 	cfg.checkOneLeader()
+	DPrintf("重连原本的非leader服务器：%v\n", (leader2+1)%servers)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
+	DPrintf("--------------")
 
 	// re-join of last node shouldn't prevent leader from existing.
 	cfg.connect(leader2)
 	cfg.checkOneLeader()
-
+	DPrintf("重连原本的leader服务器：%v\n", (leader2)%servers)
+	for i := 0; i < servers; i++ {
+		cfg.rafts[i].mu.Lock()
+		DPrintf("我的id：%v，我的身份：%v --%v 任期：%v\n", cfg.rafts[i].me, cfg.rafts[i].StatusType,cfg.connected[i],cfg.rafts[i].CurrentTerm)
+		cfg.rafts[i].mu.Unlock()
+	}
 	cfg.end()
 }
 
@@ -109,10 +178,8 @@ func TestBasicAgree2B(t *testing.T) {
 	cfg.end()
 }
 
-//
 // check, based on counting bytes of RPCs, that
 // each command is sent to each peer just once.
-//
 func TestRPCBytes2B(t *testing.T) {
 	servers := 3
 	cfg := make_config(t, servers, false)
@@ -672,7 +739,6 @@ func TestPersist32C(t *testing.T) {
 	cfg.end()
 }
 
-//
 // Test the scenarios described in Figure 8 of the extended Raft paper. Each
 // iteration asks a leader, if there is one, to insert a command in the Raft
 // log.  If there is a leader, that leader will fail quickly with a high
@@ -681,7 +747,6 @@ func TestPersist32C(t *testing.T) {
 // alive servers isn't enough to form a majority, perhaps start a new server.
 // The leader in a new term may try to finish replicating log entries that
 // haven't been committed yet.
-//
 func TestFigure82C(t *testing.T) {
 	servers := 5
 	cfg := make_config(t, servers, false)

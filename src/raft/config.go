@@ -8,7 +8,7 @@ package raft
 // test with the original before submitting.
 //
 
-import "../labrpc"
+import "6.824/src/labrpc"
 import "log"
 import "sync"
 import "testing"
@@ -56,7 +56,7 @@ type config struct {
 }
 
 var ncpu_once sync.Once
-
+//创建配置 
 func make_config(t *testing.T, n int, unreliable bool) *config {
 	ncpu_once.Do(func() {
 		if runtime.NumCPU() < 2 {
@@ -81,7 +81,7 @@ func make_config(t *testing.T, n int, unreliable bool) *config {
 
 	cfg.net.LongDelays(true)
 
-	// create a full set of Rafts.
+	// create a full set of Rafts. 创建一些服务器
 	for i := 0; i < cfg.n; i++ {
 		cfg.logs[i] = map[int]interface{}{}
 		cfg.start1(i)
@@ -201,7 +201,7 @@ func (cfg *config) start1(i int) {
 			}
 		}
 	}()
-
+	//初始化这个服务器 
 	rf := Make(ends, i, cfg.saved[i], applyCh)
 
 	cfg.mu.Lock()
@@ -300,6 +300,7 @@ func (cfg *config) setlongreordering(longrel bool) {
 // check that there's exactly one leader.
 // try a few times in case re-elections are needed.
 func (cfg *config) checkOneLeader() int {
+	//检测10次，每次500ms左右
 	for iters := 0; iters < 10; iters++ {
 		ms := 450 + (rand.Int63() % 100)
 		time.Sleep(time.Duration(ms) * time.Millisecond)
@@ -314,6 +315,7 @@ func (cfg *config) checkOneLeader() int {
 		}
 
 		lastTermWithLeader := -1
+		//保证一个term最多只有一个leader
 		for term, leaders := range leaders {
 			if len(leaders) > 1 {
 				cfg.t.Fatalf("term %d has %d (>1) leaders", term, len(leaders))
@@ -336,6 +338,7 @@ func (cfg *config) checkTerms() int {
 	term := -1
 	for i := 0; i < cfg.n; i++ {
 		if cfg.connected[i] {
+			//获得该服务器的任期 
 			xterm, _ := cfg.rafts[i].GetState()
 			if term == -1 {
 				term = xterm
